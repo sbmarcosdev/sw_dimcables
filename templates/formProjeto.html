@@ -1,0 +1,64 @@
+{% extends "header.html" %}
+{% block body %}  
+
+<div class="container" style="margin-top:50px">
+  <form action="/projeto" method="post" onsubmit="return alert('Dados Salvos com sucesso!')" > 
+    
+    <h5> Projeto </h5>
+    <hr>    
+    <div class="row">
+        <div class="col">
+          <label for="nome_projeto" class="form-label">Nome Projeto:		
+        </label>
+          <input type="hidden" class="form-control" name="id_projeto" value= "{{data[0]}}" >
+          <input type="text" class="form-control" name="nome_projeto" value= "{{data[1]}}" >
+
+        </div>
+        <div class="col">
+          <label for="potencia" class="form-label">Responsável Técnico:</label>
+          <input type="text" class="form-control" name="responsavel_tecnico" value="{{data[2]}}">
+        </div>
+
+        <div class="col">
+          <label for="material" class="form-label">Tipo Projeto: </label>
+          <select class="custom-select custom-select-sm" id="material" name="material" value="{{data[1]}}">
+            <option value="Cobre" {% if data[1]=="Cobre" %} selected {% endif %}>Média Tensão</option>
+            <option value="Alumínio" {% if data[1]=="Alumínio" %} selected {% endif %}>Baixa Tensão</option>
+          </select>
+        </div>
+      </div>
+    <div class="row mt-3">    
+        <div class="col">
+          <label for="observacao" class="form-label">Observações: </label>
+          <textarea class="form-control" name="observacao" rows="12" cols="50">{{data[3]}}</textarea>
+        </div>
+      </div>
+    <div class="row mt-3"> 
+        <div class="col">
+          <label for="data_criacao" class="form-label">Data Criação:</label>
+          <input type="datetime" class="form-control" name="data_criacao" value="{{data[4]}}" disabled>
+        </div> 
+        <div class="col">
+          <label for="data_alteracao" class="form-label">Data Alteração:</label>
+          <input type="datetime" class="form-control" name="data_alteracao" value="{{data[5]}}" disabled>
+        </div>  
+      </div>
+      
+      <hr>
+      
+      <button type="button" class="btn btn-primary" onclick="window.location='/parametros?id={{data[0]}}'"> Editar Projeto </button>
+      <button type="button" class="btn btn-primary" onclick="window.location='/relatorio?id={{data[0]}}'"> Relatório </button>
+      <button type="submit" class="btn btn-primary">Salvar Alterações</button>      
+</form>
+
+      <form action="/del_proj" method="POST" onsubmit="return confirm('Confirma Exclusão do Projeto {{data[1]}} ? \n\nAtenção! Essa ação não pode ser desfeita.')">
+        <input type="hidden" name="idToDelete" value="{{data[0]}}">
+        <button type="button" class="btn btn-secondary mt-2" onclick="window.location='/'"> Voltar </button>
+        <button type="button" class="btn btn-secondary mt-2" onclick="window.location='/novo_projeto'">Novo Projeto</button>
+        <button type="submit" class="btn btn-danger mt-2">Excluir Projeto</button>        
+      </form>
+
+</div>
+{% endblock %}
+
+

@@ -1,0 +1,308 @@
+{% extends "header.html" %}
+{% block body %}
+
+<div class="container" style="margin-top:50px">
+   
+    <div class="row">
+        <div class="col d-flex justify-content-end">
+            <a href="/"><img class ="m-2" src="/static/img/lista.png" width="40px" title="Lista de Projetos" class="m-1"></a>
+            <a href="/parametros?id={{vDados[0]}}"><img class ="m-2" src="/static/img/edit2.png" width="48px" title="Editar Parâmetros" class="m-1"></a>
+            <a href="/relatorio?id={{vDados[0]}}&gerarPdf=True" class="m-1"><img class ="m-2" src="/static/img/pdf.png" width="45px" title="Gerar PDF"></a>
+        </div>
+        
+    </div>
+    
+    <h4> {{ vDados[1] }} </h4>
+
+    <h5 class="mt-4">1 - DADOS DO CIRCUITO PARA FUNCIONAMENTO EM REGIME NORMAL</h5>
+
+    <table class="table">
+        <tr>
+            <td>Quantidade de cargas:</td>
+            <td>{{vParam[1]}}</td>
+        </tr>
+        <tr>
+            <td>Potência da carga (MVA):</td>
+            <td>{{vParam[2]}} MVA</td>
+        </tr>
+        <tr>
+            <td>Tensão de Operação (kV):</td>
+            <td>{{vParam[3]}} kV</td>
+        </tr>
+        <tr>
+            <td>Corrente no condutor calculada(A):</td>
+            <td>{{ vArranjo[3] }} A</td>
+        </tr>
+        <tr>
+            <td>Corrente total considerada (A):</td>
+            <td>{{ vArranjo[4] }} A</td>
+        </tr>
+        <tr>
+            <td>Corrente de Curto Circuito do sistema (kA):</td>
+            <td>{{vArranjo[35]}} kA</td>
+        </tr>
+        <tr>
+            <td>Corrente de curto circuito (Fase / Terra – Regime Normal) (kA):</td>
+            <td >{{vParam[13]}} kA</td>
+        </tr>
+        <tr>
+            <td>Fator de potência (cos &#934;):</td>
+            <td>{{vParam[7]}} cos &#934;</td>
+        </tr>
+        <tr>
+            <td>Queda máxima de tensão admissível - &#8710;V% :</td>
+            <td>{{vParam[6]}} %</td>
+        </tr>
+    </table>
+    
+    <h5 class="mt-4">2 - DADOS DO CABO</h5>
+
+    <table class="table">
+        <tr>
+            <td>Isolação do cabo:</td>
+            <td>{{vParam[14]}}</td>
+        </tr>
+        <tr>
+            <td>Material do Cabo:</td>
+            <td>{{vParam[15]}}</td>
+        </tr>
+        <tr>
+            <td>Classe de Isolação</td>
+            <td>{{vParam[16]}}</td>
+        </tr>
+        <tr>
+            <td>Diâmetro nominal do cabo escolhido (mm²):</td>
+            <td>{{vParam[31]}} mm²</td>
+        </tr>
+        <tr>
+            <td>Comprimento do cabo por fase – L (m):</td>
+            <td>{{vParam[17]}} m</td>
+        </tr>
+        <tr>
+            <td>Número de cabos por fase ou cabos tripolares:</td>
+            <td>{{vParam[18]}}</td>
+        </tr>
+        <tr>
+            <td>Diâmetro nominal da blindagem do cabo escolhido (mm²):</td>
+            <td>{{vParam[19]}} mm²</td>
+        </tr>
+        <tr>
+            <td>Tempo de duração do curto-circuito – t (S):</td>
+            <td>{{vParam[20]}} s</td>
+        </tr>
+        <tr>
+            <td>Capacidade de condução de corrente máxima no condutor (A) - (Tabela 29 - NBR14039):</td>
+            <td>{{vArranjo[12]}} A</td>
+        </tr>
+        <tr>
+            <td>Temperatura do condutor - Tc(ºC):</td>
+            <td>{{vArranjo[13]}} ºC</td>
+        </tr>
+        <tr>
+            <td>Temperatura do condutor durante um Curto Circuito - T2 (ºC):</td>
+            <td>{{vArranjo[14]}} ºC</td>
+        </tr>
+        <tr>
+            <td>Temperatura da blindagem durante um Curto Circuito - T2 (ºC):</td>
+            <td>{{vArranjo[15]}} ºC</td>
+        </tr>
+        <tr>
+            <td>Valor da constante &#946;</td>
+            <td>{{vArranjo[16]}}</td>
+        </tr>
+        <tr>
+            <td>Valor da constante K</td>
+            <td>{{vArranjo[17]}}</td>
+        </tr>
+        <tr>
+            <td>Corrente nominal (A):</td>
+            <td>{{vParam[5]}} A</td>
+        </tr>
+        <tr>
+            <td>Corrente nominal por veia (A):</td>
+            <td>{{vArranjo[9]}} A</td>
+        </tr>
+        <tr>
+            <td>Parâmetros elétricos do cabo – RCA (&#8486;/km):</td>
+            <td>{{vArranjo[10]}} &#8486;/km</td>
+        </tr>
+        <tr>
+            <td>Parâmetros elétricos do cabo – XL (&#8486;/km):</td>
+            <td>{{vArranjo[11]}} &#8486;/km</td>
+        </tr>
+        </table>
+        
+        
+        <h5 class="mt-4">3 - DADOS DO AMBIENTE / INSTALAÇÃO</h5>
+
+
+        <table class="table">   
+        <tr>
+            <td>Método de Instalação (Tabela 25 – NBR14039):</td>
+            <td> {{vArranjo[0]}}</td>
+        </tr>
+        <tr>
+            <td>Tipo de Instalação:</td>
+            <td>{{vArranjo[6]}}</td>
+        </tr>
+        <tr>
+            <td>Temperatura do meio Ambiente - Ta (ºC):</td>
+            <td>{{vParam[21]}} ºC</td>
+        </tr>
+        <tr>
+            <td>Profundidade do cabo (m) (Métodos F, G, H ou I)</td>
+            <td>{{vParam[22]}} m</td>
+        </tr>
+        <tr>
+            <td>Resistividade do solo (K.m/W) (métodos F1, F2, G1, G2, H ou I)</td>
+            <td>{{vParam[23]}} K.m/W</td>
+        </tr>
+        <tr>
+            <td>Número de dutos (Método F1):</td>
+            <td>{{vParam[24]}}</td>
+        </tr>
+        <tr>
+            <td>Espaçamento entre os centros dos eletrodutos (mm) (Métodos F1, G1):</td>
+            <td>{{vParam[25]}} mm</td>
+        </tr>
+        <tr>
+            <td>Número de dutos (Método G1):</td>
+            <td>{{vParam[26]}}</td>
+        </tr>
+        <tr>
+            <td>Espaçamento entre os cabos (mm) (Métodos A1, A2, B1, B2, I):</td>
+            <td>{{vParam[27]}}</td>
+        </tr>
+        <tr>
+            <td>Forma de arranjo dos cabos (métodos A, B, F, G, H):</td>
+            <td>{{ vParam[28] }}</td>
+        </tr>
+        <tr>
+            <td>Método de Instalação dos cabos (métodos A1, A2, B1, B2):</td>
+            <td>{{ vParam[29] }}</td>
+        </tr>
+        <tr>
+            <td>Instalação:</td>
+            <td>{{vArranjo[2]}}</td>
+        </tr>
+        <tr>
+            <td> {{vArranjo[1]}}</td>
+            <td> {{vArranjo[18]}} </td>
+        </tr>
+        <tr>
+            <td>{{vArranjo[24]}}</td>
+            <td>{{vArranjo[23]}}</td>
+        </tr>
+        <tr>
+            <td>{{vArranjo[25]}}</td>
+            <td>{{vArranjo[26]}}</td>
+        </tr>
+        <tr>
+            <td><small>{{vArranjo[27]}}</small></td>
+            <td>{{vArranjo[28]}}</td>
+        </tr>
+       </table>
+
+        <h5 class="mt-4">4 - CÁLCULO DE CAPACIDADE DE CONDUÇÃO DE CORRENTE</h5>
+
+        <table class="table">
+            
+        <tr>
+            <td>Máxima corrente de condução por veia (A):</td>
+            <td> {{vArranjo[29]}} A</td>
+        </tr>
+        <tr>
+            <td>Corrente de condução total - Todas as veias (A):</td>
+            <td>{{vArranjo[30]}} A</td>
+        </tr>
+        <tr>
+            <td>Potência Total de Condução dos Cabos (MVA):</td>
+            <td>{{vArranjo[31]}} MVA</td>
+        </tr>
+
+        <tr>
+            <td>RESULTADO:</td>
+            <td {%if vArranjo[32] == 'REPROVADO'%} class="bg-danger"{% endif %}>{{vArranjo[32]}}</td>
+        </tr>
+        </table>
+
+        <h5 class="mt-4">5 - CÁLCULO DE QUEDA DE TENSÃO</h5>
+
+        <table class="table">
+        <tr>
+            <td>Ângulo – &#934; (º):</td>
+            <td>{{vArranjo[7]}} º </td>
+        </tr>
+        <tr>
+            <td>Fator de potência - (sem &#934;):</td>
+            <td>{{vArranjo[8]}} sem &#934;</td>
+        </tr>
+        <tr>
+            <td>Queda de tensão - &#8710;V (V):</td>
+            <td>{{vArranjo[21]}} V</td>
+        </tr>
+        <tr>
+            <td>Queda de tensão - &#8710;V% (%):</td>
+            <td>{{ vArranjo[22]}} %</td>
+        </tr>
+        <tr>
+            <td>RESULTADO:</td>
+            <td {%if vArranjo[33] == 'REPROVADO'%} class="bg-danger"{% endif %}> {{vArranjo[33]}} </td>
+        </tr>
+        </table>
+
+    <h5 class="mt-4">6 - CÁLCULO DE CURTO CIRCUITO NO CONDUTOR</h5>
+
+    <table class="table">
+        <tr>
+            <td>Máxima corrente de curto circuito admissível (kA) (Regime Normal):</td>
+            <td>{{vArranjo[19]}} kA</td>
+        </tr>
+        <tr>
+            <td>RESULTADO:</td>
+            <td {%if vArranjo[34] == 'REPROVADO'%} class="bg-danger"{% endif %}> {{vArranjo[34]}} </td>
+        </tr>
+        
+    </table>
+      
+            <h5 class="mt-4">7 - CÁLCULO DE CURTO CIRCUITO NA BLINDAGEM</h5>
+            <p class="mt-2"> 7.1 - DADOS DE ENTRADA </p>
+    <table class="table">   
+        <tr>
+            <td>Máxima corrente de curto circuito admissível (kA) (Regime Normal):</td>
+            <td>{{vArranjo[20]}} kA</td>
+        </tr>
+        <tr>
+            <td>RESULTADO:</td>
+            <td {%if vArranjo[36] == 'REPROVADO'%} class="bg-danger"{% endif %}> {{vArranjo[36]}} </td>
+        </tr>
+    </table>
+    <h5 class="mt-4">8 - RESULTADOS FINAIS:</h5>
+    <table class="table">
+
+        <tr>
+            <td>Atendimento da Capacidade de condução de corrente após aplicação dos fatores:</td>
+            <td {%if vArranjo[32] == 'REPROVADO'%} class="bg-danger"{% endif %}>{{vArranjo[32]}}</td>
+        </tr>
+        <tr>
+            <td>Atendimento da da queda de tensão máxima estabelecida:</td>
+            <td {%if vArranjo[33] == 'REPROVADO'%} class="bg-danger"{% endif %}> {{vArranjo[33]}} </td>
+        </tr>
+        <tr>
+            <td>Atendimento de capacidade de curto circuito máximo no cabo, conforme valores estabelecidos:</td>
+            <td {%if vArranjo[34] == 'REPROVADO'%} class="bg-danger"{% endif %}> {{vArranjo[34]}} </td>
+        </tr>
+        <tr>
+            <td>Atendimento de capacidade de curto circuito máximo na blindagem, conforme valores estabelecidos:</td>
+            <td {%if vArranjo[36] == 'REPROVADO'%} class="bg-danger"{% endif %}> {{vArranjo[36]}} </td>
+        </tr>
+        <tr>
+            <td>RESULTADO FINAL:</td>
+            <td {%if vArranjo[37] == 'REPROVADO. RECALCULAR'%} class="bg-danger"{% endif %}> {{vArranjo[37]}} </td>
+        </tr>
+    </table>
+    <footer class="mt-5">
+        @sbmarcosdev
+    </footer>
+</div>
+{% endblock %}

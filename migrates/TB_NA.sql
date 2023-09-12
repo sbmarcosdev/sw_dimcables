@@ -1,0 +1,4 @@
+-- SQLite
+CREATE TABLE TB_NA (id interger, VALOR VARCHAR(10));
+
+INSERT INTO TB_NA SELECT 1,'N/A';

@@ -1,0 +1,119 @@
+<!DOCTYPE HTML>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="keywords" content="htmlcss bootstrap, multi level menu, submenu, treeview nav menu examples" />
+<meta name="description" content="Bootstrap 5 navbar multilevel treeview examples for any type of project, Bootstrap 5" />  
+
+<title>Dimensionamento Cabos Elétricos</title>
+
+<script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+<script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
+
+<link rel="stylesheet" href="https://cdn.datatables.net/1.12.1/css/dataTables.bootstrap5.min.css">
+<link rel="stylesheet " href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css " integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T " crossorigin="anonymous ">
+<link rel="stylesheet " href="https://use.fontawesome.com/releases/v5.6.3/css/all.css " integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/ " crossorigin="anonymous ">
+<link rel="stylesheet " href="https://unpkg.com/bootstrap-table@1.19.1/dist/bootstrap-table.min.css ">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js"crossorigin="anonymous"></script>
+
+<style type="text/css">
+
+/* ============ desktop view ============ */
+@media all and (min-width: 992px) {
+
+	.dropdown-menu li{
+		position: relative;
+	}
+	.dropdown-menu .submenu{ 
+		display: none;
+		position: absolute;
+		left:100%; top:-7px;
+	}
+	.dropdown-menu .submenu-left{ 
+		right:100%; left:auto;
+	}
+
+	.dropdown-menu > li:hover{ background-color: #f1f1f1 }
+	.dropdown-menu > li:hover > .submenu{
+		display: block;
+	}
+}	
+/* ============ desktop view .end// ============ */
+
+/* ============ small devices ============ */
+@media (max-width: 991px) {
+
+.dropdown-menu .dropdown-menu{
+		margin-left:0.7rem; margin-right:0.7rem; margin-bottom: .5rem;
+}
+
+}	
+/* ============ small devices .end// ============ */
+
+</style>
+
+
+<script type="text/javascript">
+//	window.addEventListener("resize", function() {
+//		"use strict"; window.location.reload(); 
+//	});
+
+
+	document.addEventListener("DOMContentLoaded", function(){
+        
+
+    	/////// Prevent closing from click inside dropdown
+		document.querySelectorAll('.dropdown-menu').forEach(function(element){
+			element.addEventListener('click', function (e) {
+			  e.stopPropagation();
+			});
+		})
+
+
+
+		// make it as accordion for smaller screens
+		if (window.innerWidth < 992) {
+
+			// close all inner dropdowns when parent is closed
+			document.querySelectorAll('.navbar .dropdown').forEach(function(everydropdown){
+				everydropdown.addEventListener('hidden.bs.dropdown', function () {
+					// after dropdown is hidden, then find all submenus
+					  this.querySelectorAll('.submenu').forEach(function(everysubmenu){
+					  	// hide every submenu as well
+					  	everysubmenu.style.display = 'none';
+					  });
+				})
+			});
+			
+			document.querySelectorAll('.dropdown-menu a').forEach(function(element){
+				element.addEventListener('click', function (e) {
+		
+				  	let nextEl = this.nextElementSibling;
+				  	if(nextEl && nextEl.classList.contains('submenu')) {	
+				  		// prevent opening link if link needs to open dropdown
+				  		e.preventDefault();
+				  		console.log(nextEl);
+				  		if(nextEl.style.display == 'block'){
+				  			nextEl.style.display = 'none';
+				  		} else {
+				  			nextEl.style.display = 'block';
+				  		}
+
+				  	}
+				});
+			})
+		}
+		// end if innerWidth
+
+	}); 
+	// DOMContentLoaded  end
+</script>
+
+</head>
+<body>	
+	{% block body %}
+	{% endblock %}
+</body>
+</html>

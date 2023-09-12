@@ -1,0 +1,813 @@
+{% extends "header.html" %}
+{% block body %}
+
+
+<div class="container" style="margin-top:50px">
+
+  <form action="upload" method="POST" onsubmit="return confirm('Confirma Alteração?')">
+
+    <input type="hidden" name="id_parametros_proj" value={{vDados[0]}}>
+
+    <h3> {{ vDados[0] }} - {{ vDados[1] }} </h3>
+    <hr>
+      
+      {% if vErro %} <div id ="divErro" class="row btn-danger m-5"><div class="col">{{ vErro }}</div></div> {% endif %}
+    
+    <h5> DADOS DA CARGA E CIRCUITO </h5>
+
+    <div class="row">
+      <div class="col">
+        <label for="cargas" class="form-label">Quantidade de Transformadores / Cargas:</label>
+        <input type="number" class="form-control" name="cargas" value={{vParam[1]}}>
+      </div>
+      <div class="col">
+        <label for="potencia" class="form-label">Potência da carga (MVA):</label>
+        <input type="number" step="0.001" class="form-control" name="potencia" id="potencia" value="{{vParam[2]}}"
+          onchange="calculo()">
+      </div>
+      <div class="col">
+        <label for="tensao" class="form-label">Tensão de Operação (kV):</label>
+        <input type="number" step="0.1" class="form-control" name="tensao" id="tensao" value="{{vParam[3]}}" onchange="calculo()" required>
+      </div>
+    </div>
+
+    <div class="row mt-3">
+      <div class="col">
+        <label for="fator_corrente" class="form-label">Fator de arredondamento de corrente (%):</label>
+        <input type="number" step="0.1" class="form-control" id="fator_corrente" name="fator_corrente"
+          value={{vParam[4]}} onchange="calculo()">
+      </div>
+      <div class="col">
+        <label for="corrente_total" class="form-label">
+          <div id="cc_calculada">Corrente total considerada (A):</div>
+        </label>
+        <input type="number" step="0.01" class="form-control" name="corrente_total" id="corrente_total" value="{{vParam[5]}}" onchange="calculo()" >
+      </div>
+    </div>
+    <div class="row mt-3">
+      <div class="col">
+        <label for="queda_maxima" class="form-label">Queda máxima de tensão admissível - ∆V% (%):</label>
+        <input type="number" step="0.1" class="form-control" name="queda_maxima" value={{vParam[6]}}>
+      </div>
+      <div class="col">
+        <label for="fator_potencia" class="form-label">Fator de potência (cos Φ):</label>
+        <input type="number" step="0.01" class="form-control" name="fator_potencia" value={{vParam[7]}}>
+      </div>
+    </div>
+    <hr>
+    <h5> DADOS PARA CÁLCULO DE CURTO CIRCUITO </h5>
+
+    <div class="row mt-3">
+      <div class="col">
+        <label for="corrente_cc_fase_terra" class="form-label">Corrente de curto circuito do fase/terra (kA):</label>
+        <input type="number" step="0.1" class="form-control" name="corrente_cc_fase_terra" id="corrente_cc_fase_terra"
+          value={{vParam[13]}}>
+      </div>
+    </div>
+    <hr>
+    <h5> OPÇÃO 1 - CURTO CIRCUITO FORNECIDO </h5>
+    <div class="row mt-3">
+      <div class="col">
+        <label for="corrente_cc_sistema" class="form-label">Corrente de curto circuito do sistema (kA):</label>
+        <input type="number" step="0.1" class="form-control" name="corrente_cc_sistema" value={{vParam[10]}}>
+      </div>
+    </div>
+    <hr>
+    <h5> OPÇÃO 2 - CORRENTE DE CURTO CIRCUITO CALCULADA PELO TRANSFORMADOR </h5>
+
+    <div class="row mt-3">
+      <div class="col">
+        <label for="potencia_trafo" class="form-label">Potência do transformador (MVA):</label>
+        <input type="number" step="0.1" class="form-control" name="potencia_trafo" id="potencia_trafo"
+          value={{vParam[8]}} onchange="calculo()">
+      </div>
+      <div class="col">
+        <label for="impedancia_trafo" class="form-label">Impedância do transformador (Z%):</label>
+        <input type="number" step="0.1" class="form-control" name="impedancia_trafo" id="impedancia_trafo"
+          value={{vParam[9]}} onchange="calculo()">
+      </div>
+    </div>
+    <div class="row mt-3">
+      <div class="col">
+        <label for="corrente_cc_barramento_calc" class="form-label">Corrente de Curto Circuito presente no
+          Barramento(Calculada–Z% Trafo) (kA):</label>
+        <input type="number" class="form-control" name="corrente_cc_barramento_calc" id="corrente_cc_barramento_calc"
+          value="{{vParam[12]}}" readonly>
+      </div>
+    </div>
+
+    <hr>
+
+    <h5> OPÇÃO 3 - CORRENTE DE CURTO CIRCUITO NÃO FORNECIDA (10x IN) </h5>
+
+    <div class="row mt-3">
+      <div class="col">
+        <label for="corrente_cc_barramento" class="form-label">Corrente de Curto Circuito presente no Barramento ( 10x
+          In ) (kA):</label>
+        <input type="number" step="0.1" class="form-control" name="corrente_cc_barramento" id="corrente_cc_barramento"
+          value="{{vParam[11]}}" readonly>
+      </div>
+    </div>
+
+
+    <hr class="mt-5">
+
+    <h5> ESCOLHA DO CABO </h5>
+
+    <hr>
+    <div class="row mt-3">
+      <div class="col">
+        <label for="isolacao" class="form-label">Isolação do cabo: </label>
+        <select class="custom-select custom-select-sm" id="isolacao" name="isolacao" value="{{vParam[14]}}">
+          <option> </option>
+          <option value="EPR – 90ºC" {% if vParam[14]=="EPR – 90ºC" %} selected {% endif %}>EPR – 90ºC</option>
+          <option value="HEPR – 90ºC" {% if vParam[14]=="HEPR – 90ºC" %} selected {% endif %}>HEPR – 90ºC</option>
+          <option value="XLPE – 90ºC" {% if vParam[14]=="XLPE – 90ºC" %} selected {% endif %}>XLPE – 90ºC</option>
+          <option value="TR XLPE – 90ºC" {% if vParam[14]=="TR XLPE – 90ºC" %} selected {% endif %}>TR XLPE – 90ºC
+          </option>
+          <option value="EPR – 105ºC" {% if vParam[14]=="EPR – 105ºC" %} selected {% endif %}>EPR – 105ºC</option>
+
+        </select>
+      </div>
+      <div class="col">
+        <label for="material" class="form-label">Material do cabo: </label>
+        <select class="custom-select custom-select-sm" id="material" name="material" value="{{vParam[15]}}">
+          <option> </option>
+          <option value="Cobre" {% if vParam[15]=="Cobre" %} selected {% endif %}>Cobre</option>
+          <option value="Alumínio" {% if vParam[15]=="Alumínio" %} selected {% endif %}>Alumínio</option>
+        </select>
+      </div>
+      <div class="col">
+        <label for="classe" class="form-label">Classe de Isolação: </label>
+        <select class="custom-select custom-select-sm" id="classe" name="classe" value="{{vParam[16]}}">
+          <option> </option>
+          <option value="1,8/3 kV" {% if vParam[16]=="1,8/3 kV" %} selected {% endif %}>1,8/3 kV</option>
+          <option value="3,6/6 kV" {% if vParam[16]=="3,6/6 kV" %} selected {% endif %}>3,6/6 kV</option>
+          <option value="8,7/15 kV" {% if vParam[16]=="8,7/15 kV" %} selected {% endif %}>8,7/15 kV</option>
+          <option value="12/20 kV" {% if vParam[16]=="12/20 kV" %} selected {% endif %}>12/20 kV</option>
+          <option value="15/25 kV" {% if vParam[16]=="15/25 kV" %} selected {% endif %}>15/25 kV</option>
+          <option value="20/35 kV" {% if vParam[16]=="20/35 kV" %} selected {% endif %}>20/35 kV</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row mt-3">
+      <div class="col">
+        <label for="diametro_cabo" class="form-label">Diâmetro nominal do cabo escolhido (mm²): </label>
+        <select class="custom-select custom-select-sm" id="diametro_cabo" name="diametro_cabo" value="{{vParam[31]}}">
+          <option value=10 {% if vParam[31]==10 %} selected {% endif %}>10 mm² </option>
+          <option value=16 {% if vParam[31]==16 %} selected {% endif %}>16 mm² </option>
+          <option value=25 {% if vParam[31]==25 %} selected {% endif %}>25 mm² </option>
+          <option value=35 {% if vParam[31]==35 %} selected {% endif %}>35 mm² </option>
+          <option value=50 {% if vParam[31]==50 %} selected {% endif %}>50 mm² </option>
+          <option value=70 {% if vParam[31]==70 %} selected {% endif %}>70 mm² </option>
+          <option value=95 {% if vParam[31]==95 %} selected {% endif %}>95 mm² </option>
+          <option value=120 {% if vParam[31]==120 %} selected {% endif %}>120 mm² </option>
+          <option value=150 {% if vParam[31]==150 %} selected {% endif %}>150 mm² </option>
+          <option value=185 {% if vParam[31]==185 %} selected {% endif %}>185 mm² </option>
+          <option value=240 {% if vParam[31]==240 %} selected {% endif %}>240 mm² </option>
+          <option value=300 {% if vParam[31]==300 %} selected {% endif %}>300 mm² </option>
+          <option value=400 {% if vParam[31]==400 %} selected {% endif %}>400 mm² </option>
+          <option value=500 {% if vParam[31]==500 %} selected {% endif %}>500 mm² </option>
+          <option value=630 {% if vParam[31]==630 %} selected {% endif %}>630 mm² </option>
+          <option value=800 {% if vParam[31]==800 %} selected {% endif %}>800 mm² </option>
+          <option value=1000 {% if vParam[31]==1000 %} selected {% endif %}>1000 mm² </option>
+        </select>
+      </div>
+
+      <div class="col">
+        <label for="comp_cabo_fase" class="form-label">Comprimento do cabo por fase – L (m):
+        </label>
+        <input type="number" class="form-control" name="comp_cabo_fase" value="{{vParam[17]}}">
+      </div>
+      <div class="col">
+        <label for="num_cabo_fase" class="form-label">Número de cabos por fase ou cabos tripolares:</label>
+        <input type="number" class="form-control" name="num_cabo_fase" value="{{vParam[18]}}">
+      </div>
+    </div>
+
+    <div class="row mt-3">
+      <div class="col">
+        <label for="nm_campanha" class="form-label">Diâmetro nominal da blindagem do cabo escolhido (mm²):
+        </label>
+        <input type="number" class="form-control" name="diametro_blindagem" value="{{vParam[19]}}">
+      </div>
+      <div class="col">
+        <label for="desc_campanha" class="form-label">Tempo de duração do curto-circuito – t (S):</label>
+        <input type="number" step="0.01" class="form-control" name="tempo_cc" value="{{vParam[20]}}">
+      </div>
+    </div>
+
+    <input type="hidden" id="mInstallRadio" value="{{ vParam[30] }}">
+
+    <button type="button" class="btn btn-outline-secondary mt-4" onclick="mostraMetodos()">MÉTODOS DE INSTALAÇÃO
+    </button>
+
+    <table class="table mt-4" id="tabela_mInstall">
+      <thead>
+        <tr>
+          <td>Método de instalação</td>
+          <td>Esquema ilustrativo</td>
+          <td>Descrição</td>
+          <td width="250px">Método de referência</td>
+          <!-- <td>Selecionar o método</td> -->
+        </tr>
+      </thead>
+      <tbody>
+
+        <tr class="met" id="row1">
+          <th scope="col">1</th>
+          <td><img src="/static/img/image226.png" width="150px"></td>
+          <td>Cabos unipolares em formação plana, encostados um ao outro, ou cabo multipolar
+            ou cabos unipolares em trifólio, afastados de qualquer parede
+            por pelo menos 0,5 vez o diâmetro do cabo, ao ar livre, em bandeja perfurada.
+          </td>
+
+          <td onclick="oculta_ab()">
+            <input type="radio" id="1A1" name="metodo" value="1A1" required>
+            <label for="1A1">A1 (protegido do sol) </label>
+            <br>
+            <input type="radio" id="1A2" name="metodo" value="1A2">
+            <label for="1A2">A2 (exposto ao sol) </label><br>
+          </td>
+        </tr>
+        <tr class="met" id="row2">
+          <th scope="col">2</th>
+          <td><img src="/static/img/image226.png" width="150px"></td>
+          <td>
+            Cabos unipolares em formação plana, com a superfície de cada cabo espaçada da superfície
+            do outro por um diâmetro do cabo e com o primeiro cabo afastado de qualquer parede
+            por pelo menos 0,3 vez o diâmetro do cabo, ao ar livre, em bandeja perfurada.
+          </td>
+
+          <td onclick="oculta_ab()">
+            <input type="radio" id="2B1" name="metodo" value="2B1">
+            <label for="2B1">B1 (protegido do sol) </label><br>
+            <input type="radio" id="2B2" name="metodo" value="2B2">
+            <label for="2B2">B2 (exposto ao sol) </label><br>
+          </td>
+        </tr>
+        <tr class="met" id="row3">
+          <th scope="col">3</th>
+          <td><img src="/static/img/image227.png" width="150px"></td>
+          <td>
+            Cabos unipolares em formação plana, encostados um ao outro, ou cabo multipolar
+            ou cabos unipolares em trifólio, afastados de qualquer parede por pelo menos 0,5 vez o diâmetro do cabo,
+            ao ar livre, sobre suportes horizontais, eletrocalha aramada ou tela.
+          </td>
+
+          <td onclick="oculta_ab()">
+            <input type="radio" id="3A1" name="metodo" value="3A1">
+            <label for="3A1">A1 (protegido do sol) </label><br>
+            <input type="radio" id="3A2" name="metodo" value="3A2">
+            <label for="3A2">A2 (exposto ao sol) </label><br>
+          </td>
+        </tr>
+        <tr class="met" id="row4">
+          <th scope="col">4</th>
+          <td><img src="/static/img/image227.png" width="150px"></td>
+          <td>
+            Cabos unipolares em formação plana, encostados um ao outro, ou cabo multipolar
+            ou cabos unipolares em trifólio, afastados de qualquer parede por pelo menos 0,3 vez o diâmetro do cabo,
+            ao ar livre, sobre suportes horizontais, eletrocalha aramada ou tela.
+          </td>
+
+          <td onclick="oculta_ab()">
+            <input type="radio" id="4B1" name="metodo" value="4B1">
+            <label for="4B1">B1 (protegido do sol) </label><br>
+            <input type="radio" id="4B2" name="metodo" value="4B2">
+            <label for="4B2">B2 (exposto ao sol) </label><br>
+          </td>
+        </tr>
+        <tr class="met" id="row5">
+          <th scope="col">5</th>
+          <td><img src="/static/img/image230.png" width="150px"></td>
+          <td>
+            Cabos unipolares em formação plana, encostados um ao outro, ou cabo multipolar ou cabos unipolares em
+            trifólio,
+            afastados de qualquer parede por pelo menos 0,5 vez o diâmetro do cabo,
+            ao ar livre, sobre suportes horizontais, em leito.
+          </td>
+          <td onclick="oculta_ab()">
+            <input type="radio" id="5A1" name="metodo" value="5A1">
+            <label for="5A1">A1 (protegido do sol) </label><br>
+            <input type="radio" id="5A2" name="metodo" value="5A2">
+            <label for="5A2">A2 (exposto ao sol) </label><br>
+          </td>
+        </tr>
+
+        <tr class="met" id="row6">
+          <th scope="col">6</th>
+          <td><img src="/static/img/image230.png" width="150px"></td>
+          <td>
+            Cabos unipolares em formação plana, encostados um ao outro, ou cabo multipolar ou cabos unipolares em
+            trifólio,
+            afastados de qualquer parede por pelo menos 0,3 vez o diâmetro do cabo,
+            ao ar livre, sobre suportes horizontais, em leito.
+          </td>
+          <td onclick="oculta_ab()">
+            <input type="radio" id="6B1" name="metodo" value="6B1">
+            <label for="6A1">B1 (protegido do sol) </label><br>
+            <input type="radio" id="6B2" name="metodo" value="6B2">
+            <label for="6B2">B2 (exposto ao sol) </label><br>
+          </td>
+        </tr>
+        <tr class="met" id="row7">
+          <th scope="col">7</th>
+          <td><img src="/static/img/image235.png" width="70px"></td>
+          <td>
+            Cabo multiplexado, autossustentado, ao ar livre.
+          </td>
+          <td onclick="oculta_ab()">
+            <input type="radio" id="7A1" name="metodo" value="7A1">
+            <label for="7A1">A1 (protegido do sol) </label><br>
+            <input type="radio" id="7A2" name="metodo" value="7A2">
+            <label for="7A2">A2 (exposto ao sol) </label><br>
+          </td>
+        </tr>
+        <tr class="met" id="row8">
+          <th scope="col">8</th>
+          <td><img src="/static/img/image237.png" width="200px"></td>
+          <td>
+            Cabos unipolares justapostos (na horizontal ou em trifólio) e cabos tripolares em canaletas fechadas no
+            solo.
+          </td>
+          <td onclick="oculta_c()">
+            <input type="radio" id="8" name="metodo" value="8">
+            <label for="8">C </label><br>
+
+          </td>
+        </tr>
+
+        <tr class="met" id="row9">
+          <th scope="col">9</th>
+          <td><img src="/static/img/9.png" width="200px"></td>
+          <td>
+            Cabos unipolares espaçados em canaletas fechadas no solo.
+          </td>
+          <td onclick="oculta_c()">
+            <input type="radio" id="9" name="metodo" value="9">
+            <label for="9"> D </label><br>
+
+          </td>
+        </tr>
+        <tr class="met" id="row10">
+          <th scope="col">10</th>
+          <td><img src="/static/img/10.png" width="150px"></td>
+          <td>
+            Cabos unipolares justapostos (na horizontal ou em trifólio) em eletroduto ao ar livre.
+          </td>
+          <td onclick="oculta_c()">
+            <input type="radio" id="10" name="metodo" value="10">
+            <label for="10"> E </label><br>
+
+          </td>
+        </tr>
+        <tr class="met" id="row11">
+          <th scope="col">11</th>
+          <td><img src="/static/img/11.png" width="150px"></td>
+          <td>
+            Cabos tripolares em eletroduto ao ar livre.
+          </td>
+          <td onclick="oculta_c()">
+            <input type="radio" id="11" name="metodo" value="11">
+            <label for="E"> E </label><br>
+
+          </td>
+        </tr>
+        <tr class="met" id="row12">
+          <th scope="col">12</th>
+          <td><img src="/static/img/12.png" width="150px"></td>
+          <td>
+            Cabos unipolares em eletroduto diretamente enterrado.
+          </td>
+          <td onclick="oculta_f()">
+            <input type="radio" id="12" name="metodo" value="12">
+            <label for="12"> F1 </label><br>
+
+          </td>
+        </tr>
+        <tr class="met" id="row13">
+          <th scope="col">13</th>
+          <td><img src="/static/img/13.png" width="150px"></td>
+          <td>
+            Cabos tripolares em eletroduto diretamente enterrado.
+          </td>
+          <td onclick="oculta_f()">
+            <input type="radio" id="13" name="metodo" value="13">
+            <label for="13"> F1 </label><br>
+
+          </td>
+        </tr>
+        <tr class="met" id="row14">
+          <th scope="col">14</th>
+          <td><img src="/static/img/14.png" width="150px"></td>
+          <td>
+            Cabos unipolares em eletroduto embutido em concreto e enterrado no solo.
+          </td>
+          <td onclick="oculta_f()">
+            <input type="radio" id="14" name="metodo" value="14">
+            <label for="14"> F2 </label><br>
+
+          </td>
+        </tr>
+        <tr class="met" id="row15">
+          <th scope="col">15</th>
+          <td><img src="/static/img/15.png" width="150px"></td>
+          <td>
+            Cabos tripolares em eletroduto embutido em concreto e enterrado no solo.
+          </td>
+          <td onclick="oculta_f()">
+            <input type="radio" id="15" name="metodo" value="15">
+            <label for="15"> F2 </label><br>
+
+          </td>
+        </tr>
+        <tr class="met" id="row16">
+          <th scope="col">16</th>
+          <td><img src="/static/img/16.png" width="150px"></td>
+          <td>
+            Cabos unipolares em eletrodutos enterrados e espaçados – um cabo por eletroduto não condutor.
+          </td>
+          <td onclick="oculta_g()">
+            <input type="radio" id="16" name="metodo" value="16">
+            <label for="16"> G1 </label><br>
+
+          </td>
+        </tr>
+        <tr class="met" id="row17">
+          <th scope="col">17</th>
+          <td><img src="/static/img/17.png" width="100px"></td>
+          <td>
+            Cabos unipolares em banco de dutos enterrado – um cabo por eletroduto não condutor.
+          </td>
+          <td onclick="oculta_g()">
+            <input type="radio" id="17" name="metodo" value="17">
+            <label for="17"> G2 </label><br>
+
+          </td>
+        </tr>
+        <tr class="met" id="row18">
+          <th scope="col">18</th>
+          <td><img src="/static/img/18.png" width="150px"></td>
+          <td>
+            Cabos unipolares em formação plana e em contato diretamente enterrados.
+          </td>
+          <td onclick="oculta_h()">
+            <input type="radio" id="18" name="metodo" value="18">
+            <label for="18"> H </label><br>
+
+          </td>
+        </tr>
+        <tr class="met" id="row19">
+          <th scope="col">19</th>
+          <td><img src="/static/img/19.png" width="150px"></td>
+          <td>
+            Cabos unipolares em formação trifólio diretamente enterrados.
+          </td>
+          <td onclick="oculta_h()">
+            <input type="radio" id="19" name="metodo" value="19">
+            <label for="19"> H </label><br>
+
+          </td>
+        </tr>
+        <tr class="met" id="row20">
+          <th scope="col">20</th>
+          <td><img src="/static/img/20.png" width="150px"></td>
+          <td>
+            Cabo tripolar diretamente enterrado.
+          </td>
+          <td onclick="oculta_h()">
+            <input type="radio" id="20" name="metodo" value="20">
+            <label for="20"> H </label><br>
+
+          </td>
+        </tr>
+        <tr class="met" id="row21">
+          <th scope="col">21</th>
+          <td><img src="/static/img/21.png" width="150px"></td>
+          <td>
+            Cabos unipolares espaçados, diretamente enterrados.
+          </td>
+          <td onclick="oculta_i()">
+            <input type="radio" id="21" name="metodo" value="21" onchange="oculta_i()">
+            <label for="21"> I </label><br>
+
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h5 class="mt-3"> DADOS DO AMBIENTE / INSTALAÇÃO </h5>
+
+    <hr>
+    <div class="row mt-3">
+      <div class="col">
+        <label for="temp_ambiente" class="form-label">Temperatura do meio Ambiente: </label>
+        <select class="custom-select custom-select-sm" id="temp_ambiente" name="temp_ambiente" required>
+          <option> </option>
+          <option value="10" {% if vParam[21]==10 %} selected {% endif %}>10 °C</option>
+          <option value="15" {% if vParam[21]==15 %} selected {% endif %}>15 °C</option>
+          <option value="20" {% if vParam[21]==20 %} selected {% endif %}>20 °C</option>
+          <option value="25" {% if vParam[21]==25 %} selected {% endif %}>25 °C</option>
+          <option value="30" {% if vParam[21]==30 %} selected {% endif %}>30 °C</option>
+          <option value="35" {% if vParam[21]==35 %} selected {% endif %}>35 °C</option>
+          <option value="40" {% if vParam[21]==40 %} selected {% endif %}>40 °C</option>
+          <option value="45" {% if vParam[21]==45 %} selected {% endif %}>45 °C</option>
+          <option value="50" {% if vParam[21]==50 %} selected {% endif %}>50 °C</option>
+          <option value="55" {% if vParam[21]==55 %} selected {% endif %}>55 °C</option>
+          <option value="60" {% if vParam[21]==60 %} selected {% endif %}>60 °C</option>
+          <option value="65" {% if vParam[21]==65 %} selected {% endif %}>65 °C</option>
+          <option value="70" {% if vParam[21]==70 %} selected {% endif %}>70 °C</option>
+          <option value="75" {% if vParam[21]==75 %} selected {% endif %}>75 °C</option>
+          <option value="80" {% if vParam[21]==80 %} selected {% endif %}>80 °C</option>
+        </select>
+      </div>
+
+      <div class="col" id="fghi">
+        <label for="profundidade_cabo" class="form-label">Profundidade do cabo (m) (Métodos F, G, H ou I) </label>
+        <select class="custom-select custom-select-sm" id="profundidade_cabo" name="profundidade_cabo">
+          <option value="0.0" {% if vParam[22]==0.0 %} selected {% endif %}>N/A</option>
+          <option value="0.7" {% if vParam[22]==0.7 %} selected {% endif %}>0,7m</option>
+          <option value="0.9" {% if vParam[22]==0.9 %} selected {% endif %}>0,9m</option>
+          <option value="1.2" {% if vParam[22]==1.2 %} selected {% endif %}>1,2m</option>
+          <option value="1.5" {% if vParam[22]==1.5 %} selected {% endif %}>1,5m</option>
+          <option value="2.0" {% if vParam[22]==2.0 %} selected {% endif %}>2m</option>
+        </select>
+      </div>
+    </div>
+    <div class="row mt-3">
+      <div class="col" id="fghi2">
+        <label for="resistividade_solo" class="form-label">Resistividade do solo (K.m/W) (métodos F1, F2, G1, G2, H ou I)
+        </label>
+        <select class="custom-select custom-select-sm" id="resistividade_solo" name="resistividade_solo">
+          <option value="0" {% if vParam[23]==0 %} selected {% endif %}>N/A</option>
+          <option value="1" {% if vParam[23]==1 %} selected {% endif %}>1</option>
+          <option value="1.5" {% if vParam[23]==1.5 %} selected {% endif %}>1,5</option>
+          <option value="2" {% if vParam[23]==2 %} selected {% endif %}>2</option>
+          <option value="2.5" {% if vParam[23]==2.5 %} selected {% endif %}>2,5</option>
+          <option value="3" {% if vParam[23]==3 %} selected {% endif %}>3</option>
+          <option value="4" {% if vParam[23]==4 %} selected {% endif %}>4</option>
+        </select>
+      </div>
+      <div class="col" id="f1">
+        <label for="num_dutos_F1" class="form-label">Número de dutos (Método F1):
+        </label>
+        <select class="custom-select custom-select-sm" id="num_dutos_F1" name="num_dutos_F1">
+
+          <option value="0" {% if vParam[24]==0 %} selected {% endif %}>N/A</option>
+          <option value="1" {% if vParam[24]==1 %} selected {% endif %}>1</option>
+          <option value="2" {% if vParam[24]==2 %} selected {% endif %}>2</option>
+          <option value="3" {% if vParam[24]==3 %} selected {% endif %}>3</option>
+          <option value="4" {% if vParam[24]==4 %} selected {% endif %}>4</option>
+        </select>
+      </div>
+    </div>
+    <div class="row mt-3">
+      <div class="col" id="f1g1">
+        <label for="espaco_eletrodutos" class="form-label">Espaçamento entre os centros dos eletrodutos (mm) (Métodos
+          F1, G1):
+        </label>
+        <select class="custom-select custom-select-sm" name="espaco_eletrodutos">
+          <option value="N/A" {% if vParam[25]=="N/A" %} selected {% endif %}>N/A</option>
+          <option value="Único" {% if vParam[25]=="Único" %} selected {% endif %}>Único</option>
+          <option value="Encostados" {% if vParam[25]=="Encostados" %} selected {% endif %}>Encostados</option>
+          <option value="200" {% if vParam[25]=="200" %} selected {% endif %}>200</option>
+          <option value="400" {% if vParam[25]=="400" %} selected {% endif %}>400</option>
+          <option value="600" {% if vParam[25]=="600" %} selected {% endif %}>600</option>
+          <option value="800" {% if vParam[25]=="800" %} selected {% endif %}>800</option>
+        </select>
+      </div>
+      <div class="col" id="g1">
+        <label for="num_dutos_G1" class="form-label">Número de dutos (Método G1):
+        </label>
+        <select class="custom-select custom-select-sm" id="num_dutos_G1" name="num_dutos_G1">
+          <option value="0" {% if vParam[26]==0 %} selected {% endif %}>N/A</option>
+          <option value="3" {% if vParam[26]==3 %} selected {% endif %}>3</option>
+          <option value="6" {% if vParam[26]==6 %} selected {% endif %}>6</option>
+          <option value="9" {% if vParam[26]==9 %} selected {% endif %}>9</option>
+          <option value="12" {% if vParam[26]==12 %} selected {% endif %}>12</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row mt-3">
+      <div class="col" id="abi">
+        <label for="espaco_cabos" class="form-label">Espaçamento entre os cabos (mm) (Métodos A1, A2, B1, B2, I):
+        </label>
+        <select class="custom-select custom-select-sm" id="espaco_cabos" name="espaco_cabos">
+          <option value="N/A" {% if vParam[27]=="N/A" %} selected {% endif %}>N/A</option>
+          <option value="2·De" {% if vParam[27]=="2·De" %} selected {% endif %}>2·De</option>
+          <option value="200 mm" {% if vParam[27]=="200 mm" %} selected {% endif %}>200 mm</option>
+          <option value="Outro, conforme métodos A1, A2, B1, B2." {% if
+            vParam[27]=="Outro, conforme métodos A1, A2, B1, B2." %} selected {% endif %}>
+            Outro, conforme métodos A1, A2, B1, B2.
+          </option>
+        </select>
+      </div>
+      <div class="col" id="abfgh">
+        <label for="arranjo" class="form-label">Forma de arranjo dos cabos (métodos A, B, F, G, H):
+        </label>
+        <select class="custom-select custom-select-sm" id="arranjo" name="arranjo" onchange="getArranjos()">
+          <option value="Unipolar - Espaçados" {% if vParam[28]=="Unipolar - Espaçados" %} selected {% endif %}>Unipolar
+            - Espaçados</option>
+          <option value="Unipolar - Contíguos" {% if vParam[28]=="Unipolar - Contíguos" %} selected {% endif %}>Unipolar
+            - Contíguos</option>
+          <option value="Unipolar - Trifólio" {% if vParam[28]=="Unipolar - Trifólio" %} selected {% endif %}>Unipolar -
+            Trifólio</option>
+          <option value="Tripolar" {% if vParam[28]=="Tripolar" %} selected {% endif %}>Tripolar</option>
+        </select>
+      </div>
+    </div>
+    <div class="row mt-3">
+      <div class="col" id="ab">
+        <label for="metodo_install" class="form-label">Método de Instalação dos cabos (métodos A1, A2, B1, B2):
+        </label>
+
+        
+        <input type="hidden" id="oculto_install" value="{{ vParam[32] }}">
+        <input type="hidden" id="oculto_metodo" value="{{ vParam[29] }}" name="metodo_install">
+        <select class="custom-select custom-select-sm" id="metodo_install" name="m_instal_id" onchange="selectInstall()"
+          required></select>
+      </div>
+    </div>
+
+    <div class="row mt-5">
+      <div class="col">
+        <button type="button" onclick="window.location='/'" class="btn btn-secondary">Voltar</button>
+        <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+      </div>
+    </div>
+
+    <hr class="m-5">
+  </form>
+</div>
+
+<script>
+
+
+  function calculo() {
+    calc = (($("#potencia").val() * 1000000) / ((1.732050807568877) * ($("#tensao").val() * 1000))).toFixed(2);
+
+    fCalc = parseFloat(calc)
+
+    fator = parseFloat($("#fator_corrente").val())
+
+    considerada = Math.ceil(((fator / 100) + 1) * fCalc)
+
+    corrente_cc_barramento = considerada / 0.1 / 1000
+
+    $("#cc_calculada").html("Corrente total considerada " + calc + " A")
+
+    $("#corrente_total").val(considerada)
+
+    $("#corrente_cc_barramento").val(corrente_cc_barramento)
+
+    D22 = $("#impedancia_trafo").val()
+
+    if (D22 > 0) {
+
+      D21 = $("#potencia_trafo").val()
+      D15 = $("#tensao").val()
+
+      ckA = ((D21 * 1000) / ((D15) * (1.732050807568877)) * 1 / (D22 / 100) / 1000).toFixed(2);
+
+      $("#corrente_cc_barramento_calc").val(ckA)
+    }
+
+  }
+
+  function textoMetodo() {
+
+    texto = $("#oculto_metodo").val()
+
+    $("#metodo_install option").filter(function () {
+
+      return $(this).text() == texto;
+    }).prop('selected', true);
+
+    $("#divErro").fadeOut('900000').slow()
+  }
+
+  function selectInstall(){
+
+    textoSel = $("#metodo_install option:selected").text()
+
+    $("#oculto_metodo").val(textoSel)
+  }
+
+
+  function metodoSelect() {
+    valOpt = $("#oculto_install").val()
+    valRadio = $("#mInstallRadio").val()
+    valor = valRadio.toString()
+    tam = (valor).length
+    if (tam == 3) {
+      valRow = "#row" + valRadio.charAt(0)
+    }
+    else if (tam == 2) {
+      valRow = "#row" + valRadio.charAt(0) + valRadio.charAt(1)
+    }
+    else if (tam == 1) {
+      valRow = "#row" + valRadio.charAt(0)
+    }
+    valRadio = "#" + valRadio
+    $(valRadio).prop("checked", true);
+    $(".met").hide();
+    $(valRow).show()
+    
+    textoMetodo()
+  }
+
+  function mInstallRadio() {
+    var valRadio = $("#mInstallRadio").val()
+    valRadio = "#" + valRadio
+    $(valRadio).prop("checked", true);
+  }
+
+  function getArranjos() {
+    $("#metodo_install").empty()
+    var Data = { "arranjo": $("#arranjo").val() };
+    $.ajax({
+      type: 'POST',
+      url: '/metodos',
+      data: Data,
+      success: function (data) {
+        $.each(data,
+          function (key, val) {
+            $("#metodo_install").append($('<option>', { value: key, text: val }))
+
+          })
+      }
+    })
+   
+  }
+
+  $(document).ready(function () {
+    getArranjos()
+    calculo()
+    $(".met").click(function () {
+      $(".met").hide()
+      $(this).show()
+    })
+    
+  })
+
+
+  function mostraMetodos() {
+    $(".met").show('slow')
+    $("#f1g1").show();
+    $("#f1").show();
+    $("#g1").show();
+    $("#abfgh").show();
+    $("#ab").show();
+  }
+
+  function oculta_ab() {
+    $("#f1g1").hide();
+    $("#f1").hide();
+    $("#g1").hide();
+    $("#fghi").hide();
+    $("#fghi2").hide();
+  }
+
+  function oculta_c() {
+    $("#f1g1").hide();
+    $("#fghi").hide();
+    $("#fghi2").hide();
+    $("#f1").hide();
+    $("#g1").hide();
+    $("#abfgh").hide();
+    $("#ab").hide();
+    $("#abi").hide();
+  }
+  function oculta_f() {
+    $("#g1").hide();
+    $("#ab").hide();
+    $("#abi").hide();
+  }
+  function oculta_g() {
+    $("#ab").hide();
+    $("#abi").hide();
+    $("#f1").hide();
+  }
+  function oculta_h() {
+    $("#f1g1").hide();
+    $("#f1").hide();
+    $("#g1").hide();
+    $("#ab").hide();
+    $("#abi").hide();
+  }
+  function oculta_i() {
+    $("#f1g1").hide();
+    $("#f1").hide();
+    $("#g1").hide();
+    $("#abfgh").hide();
+    $("#ab").hide();
+  }
+</script>
+
+<body onload="metodoSelect()">
+
+</body>
+{% endblock %}
